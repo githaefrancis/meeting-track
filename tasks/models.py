@@ -12,6 +12,8 @@ class CustomUser(AbstractUser):
     designation=models.CharField(max_length=50,blank=True)
     phone=models.CharField(max_length=50,blank=True)
 
+    def __str__(self):
+        return self.username
 
 class TaskBlock(models.Model):
     created_by=models.ForeignKey(UserCustom,related_name='task_block',on_delete=models.CASCADE)
@@ -23,13 +25,20 @@ class TaskBlock(models.Model):
         self.save()
         return self
 
+    def __str__(self):
+        return self.block_title
+
+
 
 class Priority(models.Model):
     priority_name=models.CharField(max_length=20)
     priority_description=models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.priority_name
 class Task(models.Model):
-    task_name=models.CharField(max_length=50)
+    task_ref=models.CharField(max_length=50)
+    task_block=models.ForeignKey(TaskBlock,related_name='task_in_block',on_delete=models.CASCADE)
     content=models.TextField()
     assigned_to=models.ForeignKey(UserCustom,related_name='task',on_delete=models.CASCADE)
     initial_date=models.DateField(blank=True)
@@ -37,15 +46,21 @@ class Task(models.Model):
     status=models.CharField(max_length=50)
     progress=models.CharField(max_length=10)
     comment=models.CharField(max_length=50)
-    priority=models.OneToOneField(Priority,related_name='taskpriority',on_delete=models.CASCADE)
+    priority=models.ForeignKey(Priority,related_name='taskpriority',on_delete=models.CASCADE)
 
     def add_task(self):
         self.save()
         return self
+    
+    def __str__(self):
+        return self.task_name
 
+    @classmethod
+    def get_all_tasks(cls):
+        return cls.objects.all()
 
 class SubTask(models.Model):
-    task_name=models.CharField(max_length=50)
+    task_ref=models.CharField(max_length=50)
     content=models.TextField()
     assigned_to=models.ForeignKey(UserCustom,related_name='subtask',on_delete=models.CASCADE)
     initial_date=models.DateField(blank=True)
@@ -53,8 +68,11 @@ class SubTask(models.Model):
     status=models.CharField(max_length=50)
     progress=models.CharField(max_length=10)
     comment=models.CharField(max_length=50)
-    priority=models.OneToOneField(Priority,related_name='subtask_priority',on_delete=models.CASCADE)
+    priority=models.ForeignKey(Priority,related_name='subtask_priority',on_delete=models.CASCADE)
 
     def add_subtask(self):
         self.save()
         return self
+
+    def __str__(self):
+        return self.task_name
